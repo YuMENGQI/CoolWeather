@@ -86,11 +86,18 @@ public class ChooseAreaFragment extends Fragment {
                     queryCounties();
                 }else if(currentLevel==LEVEL_COUNTY){
                     String weatherId = countyList.get(position).getWeatherId();
+                   if(getActivity() instanceof MainActivity){
                     Intent intent = new Intent(getActivity(),WeatherActivity.class);
                     intent.putExtra("weather_id",weatherId);
                     startActivity(intent);
                     getActivity().finish();
-                }
+                }else if(getActivity() instanceof WeatherActivity) {
+                    WeatherActivity activity = (WeatherActivity) getActivity();
+                    activity.drawerLayout.closeDrawers();
+                    activity.swipeRefresh.setRefreshing(true);
+                    activity.requestWeather(weatherId);
+                    }
+                    }
             }
         });
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -207,12 +214,6 @@ public class ChooseAreaFragment extends Fragment {
             }
         });
     }
-//关闭进度条对话框
-    private void closeProgressDialog() {
-        if(progressDialog !=null){
-            progressDialog.dismiss();
-        }
-    }
     //显示进度条对话框
     private void showProgressDialog() {
         if(progressDialog == null){
@@ -221,5 +222,11 @@ public class ChooseAreaFragment extends Fragment {
             progressDialog.setCanceledOnTouchOutside(false);
         }
         progressDialog.show();
+    }
+    //关闭进度条对话框
+    private void closeProgressDialog() {
+        if(progressDialog !=null){
+            progressDialog.dismiss();
+        }
     }
 }
