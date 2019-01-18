@@ -93,8 +93,8 @@ public class ChooseAreaFragment extends Fragment {
                     getActivity().finish();
                 }else if(getActivity() instanceof WeatherActivity) {
                     WeatherActivity activity = (WeatherActivity) getActivity();
-                    activity.drawerLayout.closeDrawers();
-                    activity.swipeRefresh.setRefreshing(true);
+                    // activity.drawerLayout.closeDrawers();
+                    // activity.swipeRefresh.setRefreshing(true);
                     activity.requestWeather(weatherId);
                     }
                     }
@@ -203,12 +203,14 @@ public class ChooseAreaFragment extends Fragment {
 
             @Override
             public void onFailure(Call call, IOException e) {
+                //通过runOnUiThread()方法回到主线程处理逻辑
                 getActivity().runOnUiThread(new Runnable() {
-                    @RequiresApi(api = Build.VERSION_CODES.M)
                     @Override
                     public void run() {
                         closeProgressDialog();
-                        Toast.makeText(getContext(), "加载失败", Toast.LENGTH_SHORT).show();
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            Toast.makeText(getContext(), "加载失败", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
             }
