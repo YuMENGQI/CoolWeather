@@ -158,7 +158,7 @@ private Button navButton;
                             Toast.makeText(WeatherActivity.this, "获取天气信息失败",
                                     Toast.LENGTH_SHORT).show();
                         }
-                        //swipeRefresh.setRefreshing(false);
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
 
@@ -173,6 +173,7 @@ private Button navButton;
                                 Toast.LENGTH_SHORT).show();
                         swipeRefresh.setRefreshing(false);
                     }
+
 
                 });
             }
