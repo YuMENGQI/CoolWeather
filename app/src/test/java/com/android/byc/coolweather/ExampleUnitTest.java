@@ -1,7 +1,5 @@
 package com.android.byc.coolweather;
 
-import com.android.byc.coolweather.Picture.Picture;
-import com.android.byc.coolweather.Picture.PictureApi;
 import com.android.byc.coolweather.gson.Weather;
 import com.android.byc.coolweather.network.Network;
 import com.android.byc.coolweather.network.WeatherApi;
@@ -11,7 +9,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -38,6 +35,7 @@ public class ExampleUnitTest {
         Call<WeatherResponse> call = weatherApi.queryWithCity(cityId, key);
         try {
             Response<WeatherResponse> weatherResponse = call.execute();
+
             WeatherResponse response =  weatherResponse.body();
             List<Weather> list = response.heWeather;
             Weather weather = list.get(0);
@@ -52,10 +50,10 @@ public class ExampleUnitTest {
         String bing_pic = "";
         Network network = Network.getInstance();
         WeatherApi weatherApi = network.getWeatherApi();
-        Call call = weatherApi.queryWithPicture();
+        Call<String> call = weatherApi.queryWithPicture();
         try {
-            Response response = call.execute();
-            Object o = response.body();
+            Response<String> response = call.execute();
+            bing_pic = response.body();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 /**
  * @author yu
@@ -13,15 +14,16 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * @description
  */
 public class Network {
-    private static Network network;
-    private Retrofit retrofit;
-    private static WeatherApi weatherApi;
+    public static Network network;
+    public Retrofit retrofit;
+    public WeatherApi weatherApi;
 
-    private Network() {
+    public Network() {
         Gson gson = new GsonBuilder().setLenient().create();
         retrofit = new Retrofit.Builder()
                 .baseUrl("http://guolin.tech/api/")
-                // .addConverterFactory(GsonConverterFactory.create(gson))
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         weatherApi = retrofit.create(WeatherApi.class);
     }

@@ -21,12 +21,16 @@ import android.widget.Toast;
 
 import com.android.byc.coolweather.gson.Forecast;
 import com.android.byc.coolweather.gson.Weather;
+import com.android.byc.coolweather.network.Network;
+import com.android.byc.coolweather.network.WeatherApi;
+import com.android.byc.coolweather.network.WeatherResponse;
 import com.android.byc.coolweather.service.AutoUpdateService;
 import com.android.byc.coolweather.util.HttpUtil;
 import com.android.byc.coolweather.util.Utility;
 import com.bumptech.glide.Glide;
 
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -111,60 +115,66 @@ public class WeatherActivity extends AppCompatActivity {
         });
     }
     // 加载必应每日一图
-    private void loadBingPic() {
-        String requestBingPic = "http://guolin.tech/api/bing_pic";
-        String bingPic = "http://cn.bing.com/az/hprichbg/rb/ApfelTag_ZH-CN7906570680_1920x1080.jpg";
-        Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
+    public void loadBingPic() {
+        final String[] bingpic = {""};
+        Network network = Network.getInstance();
+        final WeatherApi weatherApi = network.getWeatherApi();
+        retrofit2.Call<String> call = weatherApi.queryWithPicture();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                retrofit2.Call<String> call = weatherApi.queryWithPicture();
+                try {
+                    retrofit2.Response<String> response = call.execute();
+                    bingpic[0] = response.body();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Glide.with(WeatherActivity.this).load(bingpic[0]).into(bingPicImg);
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
+    /**
+     * @param weatherId
+     */
     // 根据天气id请求城市天气信息
     public void requestWeather(final String weatherId) {
-        String weatherUrl = "http://guolin.tech/api/weather?cityid=" +
-                weatherId + "&key=f8c8dee47ed745c6bc109f1abfc13d13";
-        HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
+        String cityId = weatherId;
+        String key = "f8c8dee47ed745c6bc109f1abfc13d13";
+        Network network = Network.getInstance();
+        WeatherApi weatherApi = network.getWeatherApi();
+        final retrofit2.Call<WeatherResponse> call = weatherApi.queryWithCity(cityId, key);
+        new Thread(new Runnable() {
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                final String responseText = response.body().string();
-                final Weather weather = Utility.handleWeatherResponse(responseText);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (weather != null && "ok".equals(weather.status)) {
-                            SharedPreferences.Editor editor = PreferenceManager
-                                    .getDefaultSharedPreferences(WeatherActivity.this).edit();
-                            editor.putString("weather", responseText);
-                            editor.apply();
-                            mWeatherId = weather.basic.weatherId;
+            public void run() {
+                try {
+                    retrofit2.Response<WeatherResponse> weatherResponse = call.execute();
+                    final WeatherResponse response = weatherResponse.body();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            List<Weather> list = response.heWeather;
+                            Weather weather = list.get(0);
                             showWeatherInfo(weather);
-                        } else {
-                            Toast.makeText(WeatherActivity.this, "获取天气信息失败",
-                                    Toast.LENGTH_SHORT).show();
+                            swipeRefresh.setRefreshing(false);
                         }
-                        swipeRefresh.setRefreshing(false);
-                    }
-                });
+                    });
 
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+        }).start();
 
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(WeatherActivity.this, "获取天气信息失败",
-                                Toast.LENGTH_SHORT).show();
-                        swipeRefresh.setRefreshing(false);
-                    }
-
-
-                });
-            }
-        });
-        loadBingPic();
     }
 
-    private void showWeatherInfo(Weather weather) {
+    public void showWeatherInfo(Weather weather) {
         String cityName = weather.basic.cityName;
         String updateTime = weather.basic.update.updateTime.split(" ")[1];
         String degree = weather.now.temperature+"℃";

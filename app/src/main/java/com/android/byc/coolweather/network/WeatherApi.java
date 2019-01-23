@@ -19,5 +19,5 @@ public interface WeatherApi {
     );
 
     @GET("bing_pic")
-    Call queryWithPicture();
+    Call<String> queryWithPicture();
 }
