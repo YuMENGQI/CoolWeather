@@ -113,27 +113,8 @@ public class WeatherActivity extends AppCompatActivity {
     // 加载必应每日一图
     private void loadBingPic() {
         String requestBingPic = "http://guolin.tech/api/bing_pic";
-        HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                final String bingPic = response.body().string();
-                SharedPreferences.Editor editor = PreferenceManager.
-                        getDefaultSharedPreferences(WeatherActivity.this).edit();
-                editor.putString("bing_pic",bingPic);
-                editor.apply();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-            }
-        });
+        String bingPic = "http://cn.bing.com/az/hprichbg/rb/ApfelTag_ZH-CN7906570680_1920x1080.jpg";
+        Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
     }
 
     // 根据天气id请求城市天气信息

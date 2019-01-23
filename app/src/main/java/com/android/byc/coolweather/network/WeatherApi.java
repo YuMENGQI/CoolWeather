@@ -1,7 +1,5 @@
 package com.android.byc.coolweather.network;
 
-import com.android.byc.coolweather.gson.Weather;
-
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
@@ -15,8 +13,11 @@ import retrofit2.http.Query;
 public interface WeatherApi {
 
     @GET("weather")
-    Call<Weather> queryWithCity(
+    Call<WeatherResponse> queryWithCity(
             @Query("cityid") String cityid,
             @Query("key") String key
     );
+
+    @GET("bing_pic")
+    Call queryWithPicture();
 }
