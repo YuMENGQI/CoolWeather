@@ -20,33 +20,35 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 public class AutoUpdateService extends Service {
-    public AutoUpdateService() {
-    }
+
+    public AutoUpdateService() {}
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
+
     @Override
     public int onStartCommand(Intent intent,int flags,int startId){
         updateWeather();
         updateBingPic();
         AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        int anHour = 8*60*60*1000;//8小时的毫秒数
-        long triggerAtTime = SystemClock.elapsedRealtime()+anHour;
+        int anHour = 8 * 60 * 60 * 1000;
+        long triggerAtTime = SystemClock.elapsedRealtime() + anHour;
         Intent i = new Intent(this,AutoUpdateService.class);
-        PendingIntent pi = PendingIntent.getService(this,0,i,0);
+        PendingIntent pi = PendingIntent.getService(this, 0, i, 0);
         manager.cancel(pi);
         manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,triggerAtTime,pi);
         return super.onStartCommand(intent,flags,startId);
     }
-//更新天气信息
-    private void updateWeather(){
+    // 更新天气信息
+    private void updateWeather() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather",null);
-        if(weatherString != null){
+        if (weatherString != null) {
             //有缓存时直接解析天气数据
             Weather weather = Utility.handleWeatherResponse(weatherString);
+            if (weather == null) return;
             String weatherId = weather.basic.weatherId;
             String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId
                     +"&key=f8c8dee47ed745c6bc109f1abfc13d13";
@@ -58,18 +60,20 @@ public class AutoUpdateService extends Service {
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
-String responseText = response.body().string();
-Weather weather = Utility.handleWeatherResponse(responseText);
-if(weather != null && "ok".equals(weather.status)){
-    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(AutoUpdateService.this).edit();
-    editor.putString("weather",responseText);
-    editor.apply();
-}
+                    String responseText = response.body().string();
+                    Weather weather = Utility.handleWeatherResponse(responseText);
+
+                    if (weather != null && "ok".equals(weather.status)) {
+                        SharedPreferences.Editor editor = PreferenceManager
+                                .getDefaultSharedPreferences(AutoUpdateService.this).edit();
+                        editor.putString("weather",responseText);
+                        editor.apply();
+                    }
                 }
             });
         }
     }
-    //更新每日必应一图
+    // 更新每日必应一图
     private void updateBingPic() {
         String requestBingPic = "http://guolin.tech/api/bing_pic";
         HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
@@ -80,10 +84,10 @@ if(weather != null && "ok".equals(weather.status)){
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-String bingPic = response.body().string();
-SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(AutoUpdateService.this).edit();
-editor.putString("bing_pic",bingPic);
-editor.apply();
+                String bingPic = response.body().string();
+                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(AutoUpdateService.this).edit();
+                editor.putString("bing_pic",bingPic);
+                editor.apply();
             }
         });
     }

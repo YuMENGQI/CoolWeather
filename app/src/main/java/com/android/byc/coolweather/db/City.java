@@ -8,7 +8,7 @@ import org.litepal.crud.DataSupport;
  * @date 2019/1/16 9:10
  * @description
  */
-public class City extends DataSupport{
+public class City extends DataSupport {
     private int id;
     private String cityName;
     private int cityCode;
